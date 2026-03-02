@@ -1,0 +1,15 @@
+PROGRAM IgnoreFixture
+VAR
+value:INT;
+ignoredValue:INT;
+END_VAR
+
+// tctidier-ignore
+ignoredValue      :=      3  ;
+value:=1+2;
+
+(* tctidier-ignore-start *)
+IF    value=  3   THEN
+ignoredValue:=value+5;
+END_IF
+(* tctidier-ignore-end *)

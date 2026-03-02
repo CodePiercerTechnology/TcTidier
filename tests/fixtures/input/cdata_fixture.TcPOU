@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject>
+  <Declaration><![CDATA[
+PROGRAM CDataFixture
+VAR
+message:STRING;
+END_VAR
+message:='Hello';
+]]></Declaration>
+</TcPlcObject>

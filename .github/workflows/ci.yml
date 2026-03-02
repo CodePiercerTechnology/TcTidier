@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        env:
+          NPM_CONFIG_CAFILE: ""
+        run: npm ci
+
+      - name: Build
+        env:
+          NPM_CONFIG_CAFILE: ""
+        run: npm run build
+
+      - name: Test
+        env:
+          NPM_CONFIG_CAFILE: ""
+        run: npm test
+
+      - name: Benchmark smoke check
+        env:
+          NPM_CONFIG_CAFILE: ""
+        run: npm run bench:compare

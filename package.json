@@ -1,0 +1,105 @@
+{
+  "name": "tctidier",
+  "displayName": "TcTidier",
+  "description": "Format TwinCAT Structured Text files with a native TypeScript formatter.",
+  "version": "0.1.0",
+  "publisher": "CodePiercerTechnologies",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Formatters",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "twincat",
+    "structured-text",
+    "iec-61131-3",
+    "plc",
+    "formatter"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('out', { recursive: true, force: true })\"",
+    "build": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "bench": "npm run build && node benchmarks/native-benchmark.js",
+    "bench:compare": "npm run build && node benchmarks/compare-benchmark.js",
+    "verify": "npm run test && npm run bench:compare",
+    "vscode:prepublish": "npm run build",
+    "test": "npm run build && node --test tests/*.test.js"
+  },
+  "main": "./out/extension.js",
+  "files": [
+    "out/**",
+    "README.md",
+    "LICENSE",
+    "language-configuration.json"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [
+    "onLanguage:twincat-st",
+    "onLanguage:structured-text",
+    "onLanguage:iecst",
+    "onLanguage:iec-st",
+    "onCommand:tctidier.formatDocument",
+    "onCommand:tctidier.formatWorkspace"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "twincat-st",
+        "aliases": [
+          "TwinCAT Structured Text",
+          "TwinCAT ST"
+        ],
+        "extensions": [
+          ".TcPOU",
+          ".TcGVL",
+          ".TcDUT",
+          ".TcIO",
+          ".st",
+          ".iecst"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "tctidier.formatDocument",
+        "title": "TcTidier: Format Current Document",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "tctidier.formatWorkspace",
+        "title": "TcTidier: Format Workspace TwinCAT Files",
+        "icon": "$(symbol-array)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "tctidier.formatDocument",
+          "group": "navigation@100",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "tctidier.formatWorkspace",
+          "group": "navigation@101",
+          "when": "editorTextFocus"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "TcTidier",
+      "properties": {}
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.9.2"
+  }
+}

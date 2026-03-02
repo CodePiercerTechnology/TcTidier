@@ -1,0 +1,5 @@
+PROGRAM NamedParamsFixture
+VAR
+result:BOOL;
+END_VAR
+result:=FB_DoThing(Enable:=TRUE,Speed:=1500,Acceleration:=100,Direction:=1);

@@ -1,0 +1,13 @@
+PROGRAM CaseFixture
+VAR
+state:INT;
+outputValue:INT;
+END_VAR
+CASE state OF
+STATE_IDLE:
+outputValue:=0;
+STATE_RUN:
+outputValue:=10;
+ELSE
+outputValue:=5;
+END_CASE

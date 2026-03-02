@@ -1,0 +1,14 @@
+FUNCTION_BLOCK TestProgram
+VAR
+    condition : BOOL;
+END_VAR
+
+// Test boolean expression with long variable names
+condition :=
+    veryLongVariableName1
+    AND veryLongVariableName2
+    AND veryLongVariableName3
+    AND veryLongVariableName4
+    AND veryLongVariableName5;
+
+END_FUNCTION_BLOCK

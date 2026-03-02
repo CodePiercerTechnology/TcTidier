@@ -1,0 +1,13 @@
+{
+  "indent": 4,                   
+  "useTabs": false,               
+  "alignDeclarations": true,      
+  "alignAssignments": true,       
+  "alignComments": true,          
+  "sortDeclarations": false,      
+  "newlineBetweenMethods": true,  
+  "normalizeBlankLines": true,    
+  "caseIndent": 4,                
+  "alignVarColumns": true,        
+  "multilineIndent": 4            
+}

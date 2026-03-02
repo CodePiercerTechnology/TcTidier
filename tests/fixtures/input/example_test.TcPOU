@@ -1,0 +1,111 @@
+FUNCTION_BLOCK ExampleProgram
+VAR_INPUT
+    bEnable  : BOOL;
+    iValue   : INT;
+    sName    : STRING;
+END_VAR
+VAR_OUTPUT
+    bRunning : BOOL;
+    iResult  : INT;
+END_VAR
+VAR
+    arrData  : ARRAY[1..10] OF INT;
+    stConfig : ST_Config;
+END_VAR
+
+// Initialize
+bRunning := FALSE;
+iResult := 0;
+
+// Basic IF statement
+IF bEnable THEN
+    bRunning := TRUE;
+END_IF
+
+// IF/ELSIF/ELSE statement
+IF iValue = 0 THEN
+    iResult := 0;
+ELSIF iValue < 10 THEN
+    iResult := 1;
+ELSIF iValue < 20 THEN
+    iResult := 2;
+ELSE
+    iResult := 99;
+END_IF
+
+SomeVeryLongFunctionNameThatContainsALotOfParameters(
+parameter1,
+parameter2,
+parameter3,
+parameter4,
+parameter5,
+parameter6,
+parameter7
+);
+
+SomveVariableThatHasLongExpressionAssignment :=
+Varaible1 +
+Variable2 +
+Variable3 +
+Variable4 +
+Variable5 +
+Variable6 +
+Variable7;
+
+SomveVariableThatHasLongExpressionAssignment2 :=
+((Varaible1
+AND Variable2)
+AND (Variable3OR Variable4)OR (Variable5AND Variable6))AND Variable7;
+
+// CASE statement
+CASE iValue OF
+
+    1:
+        iResult := 10;
+
+    2:
+        iResult := 20;
+
+    3:
+        iResult := 30;
+    ELSE
+        iResult := 0;
+    END_CASE
+
+    // Nested structures
+    IF bEnable THEN
+        CASE iValue OF
+
+            10:
+                IF stConfig.bActive THEN
+                    iResult := 100;
+                END_IF
+
+            20:
+                iResult := 200;
+            ELSE
+                iResult := 0;
+            END_CASE
+        END_IF
+
+        // FOR loop
+        FOR i := 1 TO 10 DO
+            arrData[i] := i * 2;
+        END_FOR
+
+        // Long function call with named parameters
+        FB_ProcessData(
+        Enable := TRUE,
+        InputValue := iValue,
+        Timeout := 5000
+);
+
+        // String test
+        sName := 'Hello "World"';
+
+        // Complex boolean expression
+        IF bEnable AND iValue > 0 AND (arrData[1] > 0 OR arrData[2] > 0) THEN
+            bRunning := TRUE;
+        END_IF
+
+END_FUNCTION_BLOCK

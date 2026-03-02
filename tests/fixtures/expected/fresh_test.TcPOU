@@ -1,0 +1,37 @@
+FUNCTION_BLOCK TestProgram
+VAR
+    result    : INT;
+    condition : BOOL;
+END_VAR
+
+// Test function call with multiple parameters
+SomeFunction(
+    param1,
+    param2,
+    param3,
+    param4,
+    param5,
+    param6,
+    param7,
+    param8,
+    param9,
+    param10
+);
+
+// Test assignment with long expression
+result :=
+value1
++ value2
++ value3
++ value4
++ value5
++ value6
++ value7
++ value8
++ value9
++ value10;
+
+// Test boolean expression
+condition := flag1 AND flag2 AND flag3 AND flag4 AND flag5 AND flag6 AND flag7 AND flag8;
+
+END_FUNCTION_BLOCK

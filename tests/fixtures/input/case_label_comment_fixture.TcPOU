@@ -1,0 +1,19 @@
+PROGRAM CaseLabelCommentFixture
+VAR
+    cycleCounter : INT;
+    autoModeEnabled : BOOL;
+    emergencyStop : BOOL;
+    safetyCircuit : BOOL;
+END_VAR
+
+CASE cycleCounter OF
+    1: // Manual Mode Examples
+    autoModeEnabled := FALSE;
+    emergencyStop := TRUE;
+    safetyCircuit := TRUE;
+
+    2: // Auto Mode - Emergency Stop
+    autoModeEnabled := TRUE;
+    emergencyStop := FALSE;
+    safetyCircuit := TRUE;
+END_CASE

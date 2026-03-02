@@ -1,0 +1,9 @@
+FUNCTION_BLOCK TestProgram
+VAR
+    condition : BOOL;
+END_VAR
+
+// Test boolean expression
+condition := flag1 AND flag2 AND flag3 AND flag4;
+
+END_FUNCTION_BLOCK

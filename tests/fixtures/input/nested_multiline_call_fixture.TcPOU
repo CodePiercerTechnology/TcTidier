@@ -1,0 +1,17 @@
+FUNCTION_BLOCK NestedMultilineCallFixture
+VAR
+    eEnableState : INT;
+    ePrevState : INT;
+    tonStateWait : TON;
+END_VAR
+
+IF TRUE THEN
+    IF TRUE THEN
+        tonStateWait(
+        IN := eEnableState <> ePrevState,
+        PT := T#5S
+        );
+    END_IF
+END_IF
+
+END_FUNCTION_BLOCK

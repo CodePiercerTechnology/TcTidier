@@ -1,0 +1,6 @@
+{
+  "iterations": 500,
+  "warmupIterations": 25,
+  "maxAvgMsPerDocument": 1.0,
+  "minDocsPerSecond": 1000
+}

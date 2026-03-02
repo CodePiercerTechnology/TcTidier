@@ -1,0 +1,15 @@
+FUNCTION_BLOCK MultilineCallIfFixture
+VAR
+    tmrSampleTimer : TON;
+    tSampleTime : TIME;
+    bEnable : BOOL;
+END_VAR
+
+IF bEnable THEN
+    tmrSampleTimer(
+    IN := NOT tmrSampleTimer.Q,
+    PT := tSampleTime
+    );
+END_IF
+
+END_FUNCTION_BLOCK
