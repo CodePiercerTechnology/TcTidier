@@ -5,6 +5,15 @@
   "version": "0.1.0",
   "publisher": "CodePiercerTechnologies",
   "license": "MIT",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CodePiercerTechnology/TcTidier.git"
+  },
+  "homepage": "https://github.com/CodePiercerTechnology/TcTidier",
+  "bugs": {
+    "url": "https://github.com/CodePiercerTechnology/TcTidier/issues"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -40,12 +49,9 @@
     "workspace"
   ],
   "activationEvents": [
-    "onLanguage:twincat-st",
     "onLanguage:structured-text",
     "onLanguage:iecst",
-    "onLanguage:iec-st",
-    "onCommand:tctidier.formatDocument",
-    "onCommand:tctidier.formatWorkspace"
+    "onLanguage:iec-st"
   ],
   "contributes": {
     "languages": [
