@@ -93,13 +93,25 @@ test("extractIgnoreLines handles line and block markers", () => {
 test("alignment helpers normalize declarations and assignments", () => {
   const config = createConfig({ useTabs: false, indent: 4 });
   const declarations = alignDeclarations(
-    ["foo:INT;", "longerName:BOOL;\t", "END_VAR"],
+    ["foo:INT;", "longerName:BOOL;\t", "commented : STRING; // ok", "END_VAR"],
     config
   );
   assert.deepEqual(declarations, [
     "    foo        : INT;",
     "    longerName : BOOL;",
+    "    commented  : STRING; // ok",
     "END_VAR"
+  ]);
+
+  const enumMembers = alignDeclarations(
+    ["INFO := 0,", "WARNING := 1,", "ALARM := 2", ");"],
+    config
+  );
+  assert.deepEqual(enumMembers, [
+    "    INFO    := 0,",
+    "    WARNING := 1,",
+    "    ALARM   := 2",
+    ");"
   ]);
 
   const vars = alignVarsGlobally(
@@ -143,7 +155,7 @@ test("indentLines normalizes one-line IF and CASE blocks", () => {
     "",
     "    STATE_IDLE:",
     "        value:=0;",
-    "    END_CASE"
+    "END_CASE"
   ]);
 });
 
@@ -169,7 +181,7 @@ test("indentLines indents CASE bodies after labels with inline comments", () => 
     "",
     "    2: // Auto Mode",
     "        emergencyStop := TRUE;",
-    "    END_CASE"
+    "END_CASE"
   ]);
 });
 
@@ -188,6 +200,143 @@ test("indentLines preserves already-expanded multiline function calls", () => {
   ]);
 });
 
+test("indentLines indents TYPE, STRUCT, and enum bodies in DUT content", () => {
+  const config = createConfig({ useTabs: false, indent: 4 });
+
+  const enumIndented = indentLines(
+    [
+      "TYPE E_VFD_State :",
+      "STRUCT",
+      "{attribute 'qualified_only'}",
+      "TYPE E_VFD_State :",
+      "(",
+      "Stopped,",
+      "Running",
+      ");",
+      "END_STRUCT;",
+      "END_TYPE"
+    ],
+    config
+  );
+
+  assert.deepEqual(enumIndented, [
+    "TYPE E_VFD_State :",
+    "STRUCT",
+    "    {attribute 'qualified_only'}",
+    "    TYPE E_VFD_State :",
+    "    (",
+    "        Stopped,",
+    "        Running",
+    "    );",
+    "END_STRUCT;",
+    "END_TYPE"
+  ]);
+
+  const structIndented = indentLines(
+    [
+      "TYPE ST_VFD_Controls :",
+      "STRUCT",
+      "STRUCT",
+      "ButtonAutoMode : BOOL;",
+      "END_STRUCT",
+      "END_STRUCT;",
+      "END_TYPE"
+    ],
+    config
+  );
+
+  assert.deepEqual(structIndented, [
+    "TYPE ST_VFD_Controls :",
+    "STRUCT",
+    "    STRUCT",
+    "        ButtonAutoMode : BOOL;",
+    "    END_STRUCT",
+    "END_STRUCT;",
+    "END_TYPE"
+  ]);
+});
+
+test("indentLines backs out to the CASE base indent after nested branch blocks", () => {
+  const config = createConfig({ useTabs: false, indent: 4 });
+  const indented = indentLines(
+    [
+      "IF oAlertIsActive THEN",
+      "nextState := Fault;",
+      "ELSE",
+      "CASE _stMotor.State OF",
+      "E_Motor_State.Stopped:",
+      "IF oRunCommand THEN",
+      "nextState := Starting;",
+      "END_IF",
+      "E_Motor_State.Fault:",
+      "IF NOT oRunCommand THEN",
+      "nextState := Stopped;",
+      "END_IF",
+      "END_CASE",
+      "END_IF"
+    ],
+    config
+  );
+
+  assert.deepEqual(indented, [
+    "IF oAlertIsActive THEN",
+    "    nextState := Fault;",
+    "ELSE",
+    "    CASE _stMotor.State OF",
+    "",
+    "        E_Motor_State.Stopped:",
+    "            IF oRunCommand THEN",
+    "                nextState := Starting;",
+    "            END_IF",
+    "",
+    "        E_Motor_State.Fault:",
+    "            IF NOT oRunCommand THEN",
+    "                nextState := Stopped;",
+    "            END_IF",
+    "    END_CASE",
+    "END_IF"
+  ]);
+});
+
+test("indentLines resets leaked indent at METHOD boundaries", () => {
+  const config = createConfig({ useTabs: false, indent: 4 });
+  const indented = indentLines(
+    [
+      "IF someOuterThing THEN",
+      "METHOD PRIVATE State : E_Motor_State",
+      "VAR",
+      "nextState : E_Motor_State;",
+      "END_VAR",
+      "IF oAlertIsActive THEN",
+      "nextState := Fault;",
+      "ELSE",
+      "CASE _stMotor.State OF",
+      "E_Motor_State.Fault:",
+      "nextState := Stopped;",
+      "END_CASE",
+      "END_IF"
+    ],
+    config
+  );
+
+  assert.deepEqual(indented, [
+    "IF someOuterThing THEN",
+    "METHOD PRIVATE State : E_Motor_State",
+    "VAR",
+    "nextState : E_Motor_State;",
+    "END_VAR",
+    "IF oAlertIsActive THEN",
+    "    nextState := Fault;",
+    "ELSE",
+    "    CASE _stMotor.State OF",
+    "",
+    "        E_Motor_State.Fault:",
+    "            nextState := Stopped;",
+    "    END_CASE",
+    "END_IF"
+  ]);
+});
+
 test("normalizeParenthesesSpacing and formatText handle CDATA content", () => {
   assert.equal(normalizeParenthesesSpacing("Call( a,b )"), "Call(a, b)");
 
@@ -200,5 +349,31 @@ test("normalizeParenthesesSpacing and formatText handle CDATA content", () => {
   assert.equal(
     formatted,
     "<Declaration><![CDATA[VAR\n    x : INT;\nEND_VAR\n]]></Declaration>"
+  );
+});
+
+test("formatText handles XML-encoded Declaration content", () => {
+  const config = createConfig({ useTabs: false, indent: 4 });
+  const formatted = formatText(
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<TcPlcObject>\n  <Declaration>TYPE ST_VFD_Controls :&#xD;\nSTRUCT&#xD;\nSTRUCT&#xD;\nButtonAutoMode : BOOL;&#xD;\nEND_STRUCT&#xD;\nEND_STRUCT;&#xD;\nEND_TYPE</Declaration>\n</TcPlcObject>",
+    config
+  );
+
+  assert.equal(
+    formatted,
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<TcPlcObject>\n  <Declaration>TYPE ST_VFD_Controls :\nSTRUCT\n    STRUCT\n        ButtonAutoMode : BOOL;\n    END_STRUCT\nEND_STRUCT;\nEND_TYPE</Declaration>\n</TcPlcObject>"
+  );
+});
+
+test("formatText recovers plain DUT text polluted with XML entities", () => {
+  const config = createConfig({ useTabs: false, indent: 4 });
+  const formatted = formatText(
+    "TYPE ST_CiA402_Drive_PDO :\nSTRUCT\n&#xD;\nSTRUCT&#xD;\nControlWord    : WORD;&#xD;\nVelocityTarget : INT;&#xD;\nEND_STRUCT&#xD;\nEND_TYPE&#xD;\nEND_STRUCT;\nEND_TYPE",
+    config
+  );
+
+  assert.equal(
+    formatted,
+    "TYPE ST_CiA402_Drive_PDO :\nSTRUCT\n    STRUCT\n        ControlWord    : WORD;\n        VelocityTarget : INT;\n    END_STRUCT\nEND_STRUCT;\nEND_TYPE"
   );
 });

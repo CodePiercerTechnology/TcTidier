@@ -12,4 +12,4 @@ CASE state OF
         outputValue := 10;
     ELSE
         outputValue := 5;
-    END_CASE
+END_CASE

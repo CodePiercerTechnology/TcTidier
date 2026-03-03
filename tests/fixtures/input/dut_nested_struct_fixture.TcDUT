@@ -1,0 +1,13 @@
+TYPE ST_VFD_Controls :
+STRUCT
+STRUCT
+ButtonAutoMode             : BOOL;
+ButtonManualMode           : BOOL;
+ButtonManualRequestForward : BOOL;
+ButtonManualRequestReverse : BOOL;
+ButtonReset                : BOOL;
+
+ManualSpeedRequest : REAL;
+END_STRUCT
+END_STRUCT;
+END_TYPE

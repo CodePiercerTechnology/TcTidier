@@ -17,4 +17,4 @@ CASE cycleCounter OF
         autoModeEnabled := TRUE;
         emergencyStop := FALSE;
         safetyCircuit := TRUE;
-    END_CASE
+END_CASE

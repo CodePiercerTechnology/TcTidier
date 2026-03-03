@@ -41,6 +41,7 @@
   "main": "./out/extension.js",
   "files": [
     "out/**",
+    "media/**",
     "README.md",
     "LICENSE",
     "language-configuration.json"
@@ -49,9 +50,12 @@
     "workspace"
   ],
   "activationEvents": [
+    "onLanguage:twincat-st",
     "onLanguage:structured-text",
     "onLanguage:iecst",
-    "onLanguage:iec-st"
+    "onLanguage:iec-st",
+    "onCommand:tctidier.formatDocument",
+    "onCommand:tctidier.formatWorkspace"
   ],
   "contributes": {
     "languages": [

@@ -1,0 +1,7 @@
+TYPE ST_AlertMessage :
+STRUCT
+    Number   : UINT;
+    Message  : T_AlertMessage_Text;
+    Severity : E_AlertSeverity;  // Info / Warning / Alarm / Fault / Safety
+END_STRUCT;
+END_TYPE

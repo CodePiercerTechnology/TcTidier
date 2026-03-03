@@ -4,7 +4,17 @@ import { cleanLine, isVarEnd, isVarKeyword } from "./helpers";
 const ONE_LINE_IF_PATTERN = /^\s*IF\s+(.*?)\s+THEN\s+([^;]+);\s*END_IF\s*$/i;
 const END_FOR_PATTERN = /^\s*END_FOR\s*$/i;
 const END_IF_PATTERN = /^\s*END_IF\s*$/i;
+const TYPE_START_PATTERN = /^\s*TYPE\b/i;
+const END_TYPE_PATTERN = /^\s*END_TYPE\s*;?\s*$/i;
+const STRUCT_START_PATTERN = /^\s*STRUCT\s*$/i;
+const END_STRUCT_PATTERN = /^\s*END_STRUCT\s*;?\s*$/i;
+const ENUM_OPEN_PATTERN = /^\s*\(\s*$/;
+const ENUM_CLOSE_PATTERN = /^\s*\)\s*;?\s*$/;
 const FUNCTION_PATTERN = /^\s*FUNCTION\s/;
+const METHOD_PATTERN = /^\s*METHOD\b/i;
+const PROGRAM_PATTERN = /^\s*PROGRAM\b/i;
+const ACTION_PATTERN = /^\s*ACTION\b/i;
+const PROPERTY_PATTERN = /^\s*PROPERTY\b/i;
 const END_FUNCTION_PATTERN = /^\s*END_(FUNCTION_BLOCK|FUNCTION)\s*$/i;
 const CASE_START_PATTERN = /^\s*CASE\s+/i;
 const OF_PATTERN = /\bOF\b/i;
@@ -29,6 +39,8 @@ export function indentLines(lines: string[], config: Config): string[] {
   const inMultilineComment = { active: false };
   const caseStack: number[] = [];
   const callStack: string[] = [];
+  const enumStack: number[] = [];
+  let pendingTypeHeader = false;
 
   let index = 0;
   while (index < lines.length) {
@@ -84,14 +96,67 @@ export function indentLines(lines: string[], config: Config): string[] {
       continue;
     }
 
+    if (END_STRUCT_PATTERN.test(upper)) {
+      indentLevel = Math.max(indentLevel - 1, 0);
+      output.push(`${config.indentStr.repeat(indentLevel)}${stripped}`);
+      pendingTypeHeader = false;
+      index += 1;
+      continue;
+    }
+
+    if (END_TYPE_PATTERN.test(upper)) {
+      output.push(`${config.indentStr.repeat(indentLevel)}${stripped}`);
+      pendingTypeHeader = false;
+      index += 1;
+      continue;
+    }
+
+    if (enumStack.length > 0 && ENUM_CLOSE_PATTERN.test(stripped)) {
+      indentLevel = Math.max(indentLevel - 1, 0);
+      enumStack.pop();
+      output.push(`${config.indentStr.repeat(indentLevel)}${stripped}`);
+      pendingTypeHeader = false;
+      index += 1;
+      continue;
+    }
+
     if (
       isVarKeyword(upper) ||
+      METHOD_PATTERN.test(upper) ||
+      PROGRAM_PATTERN.test(upper) ||
+      ACTION_PATTERN.test(upper) ||
+      PROPERTY_PATTERN.test(upper) ||
       upper.includes("FUNCTION_BLOCK") ||
       FUNCTION_PATTERN.test(upper)
     ) {
       indentLevel = 0;
       caseStack.length = 0;
+      pendingTypeHeader = false;
       output.push(stripped);
+      index += 1;
+      continue;
+    }
+
+    if (TYPE_START_PATTERN.test(upper)) {
+      output.push(`${config.indentStr.repeat(indentLevel)}${stripped}`);
+      pendingTypeHeader = true;
+      index += 1;
+      continue;
+    }
+
+    if (STRUCT_START_PATTERN.test(upper)) {
+      output.push(`${config.indentStr.repeat(indentLevel)}${stripped}`);
+      indentLevel += 1;
+      pendingTypeHeader = false;
+      index += 1;
+      continue;
+    }
+
+    if (pendingTypeHeader && ENUM_OPEN_PATTERN.test(stripped)) {
+      output.push(`${config.indentStr.repeat(indentLevel)}${stripped}`);
+      indentLevel += 1;
+      enumStack.push(indentLevel);
+      pendingTypeHeader = false;
       index += 1;
       continue;
     }
@@ -121,9 +186,9 @@ export function indentLines(lines: string[], config: Config): string[] {
     }
 
     if (END_CASE_PATTERN.test(upper)) {
-      caseStack.pop();
-      indentLevel = Math.max(indentLevel - 1, 0);
-      output.push(`${config.indentStr.repeat(indentLevel)}${stripped}`);
+      const baseIndent = caseStack.pop() ?? Math.max(indentLevel - 1, 0);
+      indentLevel = baseIndent;
+      output.push(`${config.indentStr.repeat(baseIndent)}${stripped}`);
       index += 1;
       continue;
     }
@@ -167,6 +232,10 @@ export function indentLines(lines: string[], config: Config): string[] {
 
     const lineIndent = config.indentStr.repeat(indentLevel);
     output.push(`${lineIndent}${stripped}`);
+
+    if (!STRUCT_START_PATTERN.test(upper) && !ENUM_OPEN_PATTERN.test(stripped)) {
+      pendingTypeHeader = false;
+    }
 
     if (MULTILINE_CALL_OPEN_PATTERN.test(stripped)) {
       callStack.push(lineIndent);

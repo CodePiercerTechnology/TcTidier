@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject>
+  <Declaration>TYPE ST_VFD_Controls :&#xD;
+STRUCT&#xD;
+STRUCT&#xD;
+ButtonAutoMode             : BOOL;&#xD;
+ButtonManualMode           : BOOL;&#xD;
+ButtonManualRequestForward : BOOL;&#xD;
+ButtonManualRequestReverse : BOOL;&#xD;
+ButtonReset                : BOOL;&#xD;
+&#xD;
+ManualSpeedRequest : REAL;&#xD;
+END_STRUCT&#xD;
+END_STRUCT;&#xD;
+END_TYPE</Declaration>
+</TcPlcObject>

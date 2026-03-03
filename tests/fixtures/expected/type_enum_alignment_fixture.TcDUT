@@ -1,0 +1,9 @@
+TYPE E_AlertSeverity :
+(
+    INFO    := 0,
+    WARNING := 1,
+    ALARM   := 2,
+    FAULT   := 3,
+    SAFETY  := 4
+);
+END_TYPE

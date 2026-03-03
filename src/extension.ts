@@ -154,6 +154,7 @@ async function formatWorkspaceFiles(
   }
 
   let formattedCount = 0;
+  let skippedDirtyCount = 0;
 
   await vscode.window.withProgress(
     {
@@ -172,21 +173,26 @@ async function formatWorkspaceFiles(
           message: `${index + 1}/${files.length} ${vscode.workspace.asRelativePath(uri)}`
         });
 
-        const document = await vscode.workspace.openTextDocument(uri);
-        const source = document.getText();
-        const formatted = runFormatter(context, document, source, token);
-
-        if (formatted === source) {
+        const openDocument = vscode.workspace.textDocuments.find(
+          (document) => document.uri.toString() === uri.toString()
+        );
+        if (openDocument?.isDirty) {
+          skippedDirtyCount += 1;
           continue;
         }
 
-        const fullRange = new vscode.Range(
-          document.positionAt(0),
-          document.positionAt(source.length)
-        );
-        const edit = new vscode.WorkspaceEdit();
-        edit.replace(uri, fullRange, formatted);
-        const applied = await vscode.workspace.applyEdit(edit);
+        const document = openDocument || (await vscode.workspace.openTextDocument(uri));
+        const edits = provideFormattingEdits(context, document, token);
+        if (edits.length === 0) {
+          continue;
+        }
+
+        const workspaceEdit = new vscode.WorkspaceEdit();
+        for (const edit of edits) {
+          workspaceEdit.replace(uri, edit.range, edit.newText);
+        }
+
+        const applied = await vscode.workspace.applyEdit(workspaceEdit);
         if (!applied) {
           throw new Error(`Failed to apply edits to ${uri.fsPath}`);
         }
@@ -198,7 +204,9 @@ async function formatWorkspaceFiles(
   );
 
   void vscode.window.showInformationMessage(
-    `TcTidier: Formatted ${formattedCount} of ${files.length} workspace files.`
+    skippedDirtyCount > 0
+      ? `TcTidier: Formatted ${formattedCount} of ${files.length} workspace files. Skipped ${skippedDirtyCount} dirty file(s).`
+      : `TcTidier: Formatted ${formattedCount} of ${files.length} workspace files.`
   );
 }
 

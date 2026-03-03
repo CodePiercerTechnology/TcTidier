@@ -1,0 +1,13 @@
+TYPE E_VFD_State :
+STRUCT
+    {attribute 'qualified_only'}
+    TYPE E_VFD_State :
+    (
+        Stopped,
+        Starting,
+        Running,
+        Stopping,
+        Fault
+    );
+END_STRUCT;
+END_TYPE

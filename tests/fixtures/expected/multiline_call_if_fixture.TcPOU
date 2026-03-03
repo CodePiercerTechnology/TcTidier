@@ -9,7 +9,7 @@ IF bEnable THEN
     tmrSampleTimer(
         IN := NOT tmrSampleTimer.Q,
         PT := tSampleTime
-);
+    );
 END_IF
 
 END_FUNCTION_BLOCK

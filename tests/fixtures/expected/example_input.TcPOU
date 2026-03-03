@@ -70,42 +70,42 @@ CASE iValue OF
         iResult := 30;
     ELSE
         iResult := 0;
+END_CASE
+
+// Nested structures
+IF bEnable THEN
+    CASE iValue OF
+
+        10:
+            IF stConfig.bActive THEN
+                iResult := 100;
+            END_IF
+
+        20:
+            iResult := 200;
+        ELSE
+            iResult := 0;
     END_CASE
+END_IF
 
-    // Nested structures
-    IF bEnable THEN
-        CASE iValue OF
+// FOR loop
+FOR i := 1 TO 10 DO
+    arrData[i] := i * 2;
+END_FOR
 
-            10:
-                IF stConfig.bActive THEN
-                    iResult := 100;
-                END_IF
-
-            20:
-                iResult := 200;
-            ELSE
-                iResult := 0;
-            END_CASE
-        END_IF
-
-        // FOR loop
-        FOR i := 1 TO 10 DO
-            arrData[i] := i * 2;
-        END_FOR
-
-        // Long function call with named parameters
-        FB_ProcessData(
-            Enable := TRUE,
-            InputValue := iValue,
-            Timeout := 5000
+// Long function call with named parameters
+FB_ProcessData(
+    Enable     := TRUE,
+    InputValue := iValue,
+    Timeout    := 5000
 );
 
-        // String test
-        sName := 'Hello "World"';
+// String test
+sName := 'Hello "World"';
 
-        // Complex boolean expression
-        IF bEnable AND iValue > 0 AND (arrData[1] > 0 OR arrData[2] > 0) THEN
-            bRunning := TRUE;
-        END_IF
+// Complex boolean expression
+IF bEnable AND iValue > 0 AND (arrData[1] > 0 OR arrData[2] > 0) THEN
+    bRunning := TRUE;
+END_IF
 
 END_FUNCTION_BLOCK

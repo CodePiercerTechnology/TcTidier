@@ -74,6 +74,6 @@ export function extractIgnoreLines(
 export function normalizeParenthesesSpacing(line: string): string {
   return line
     .replace(/\(\s+/g, "(")
-    .replace(/\s+\)/g, ")")
+    .replace(/([^\s])\s+\)/g, "$1)")
     .replace(/,([^ ])/g, ", $1");
 }

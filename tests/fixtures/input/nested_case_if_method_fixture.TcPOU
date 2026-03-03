@@ -1,0 +1,39 @@
+METHOD PRIVATE State : E_Motor_State
+
+VAR
+	nextState : E_Motor_State;
+END_VAR
+
+nextState := _stMotor.State;
+IF oAlertIsActive THEN
+	nextState := E_Motor_State.Fault;
+ELSE
+	CASE _stMotor.State OF
+
+		E_Motor_State.Stopped:
+			IF oRunCommand THEN
+				nextState := E_Motor_State.Starting;
+			END_IF
+
+		E_Motor_State.Starting:
+			IF _stMotor.IO.Feedback THEN
+				nextState := E_Motor_State.Running;
+			END_IF
+
+		E_Motor_State.Running:
+			IF NOT oRunCommand THEN
+				nextState := E_Motor_State.Stopping;
+			END_IF
+
+		E_Motor_State.Stopping:
+			IF NOT _stMotor.IO.Feedback THEN
+				nextState := E_Motor_State.Stopped;
+			END_IF
+
+		E_Motor_State.Fault:
+			// Recovery only when fully stopped and de-energized
+			IF NOT oRunCommand AND NOT _stMotor.IO.Feedback THEN
+				nextState := E_Motor_State.Stopped;
+			END_IF
+	END_CASE
+END_IF
