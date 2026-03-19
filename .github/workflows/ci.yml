@@ -31,6 +31,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Cache VS Code test runtime
         uses: actions/cache@v4
@@ -41,7 +42,7 @@ jobs:
       - name: Install dependencies
         env:
           NPM_CONFIG_CAFILE: ""
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit --fund=false
 
       - name: Verify
         env:
