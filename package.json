@@ -50,12 +50,9 @@
     "workspace"
   ],
   "activationEvents": [
-    "onLanguage:twincat-st",
     "onLanguage:structured-text",
     "onLanguage:iecst",
-    "onLanguage:iec-st",
-    "onCommand:tctidier.formatDocument",
-    "onCommand:tctidier.formatWorkspace"
+    "onLanguage:iec-st"
   ],
   "contributes": {
     "languages": [
