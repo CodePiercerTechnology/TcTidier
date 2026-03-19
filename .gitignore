@@ -8,3 +8,5 @@ __pycache__/
 *.vsix
 coverage/
 .nyc_output/
+tests/integration/.tmp-workspace/
+.vscode-test/

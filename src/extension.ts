@@ -88,24 +88,11 @@ function provideFormattingEdits(
   document: vscode.TextDocument,
   token: vscode.CancellationToken
 ): vscode.TextEdit[] {
-  try {
-    const source = document.getText();
-    const formatted = runFormatter(context, document, source, token);
-    if (formatted === source) {
-      return [];
-    }
-
-    const fullRange = new vscode.Range(
-      document.positionAt(0),
-      document.positionAt(source.length)
-    );
-
-    return [vscode.TextEdit.replace(fullRange, formatted)];
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    void vscode.window.showErrorMessage(`TcTidier: ${message}`);
-    return [];
+  const result = tryCreateFormattingEdits(context, document, token);
+  if (result.error) {
+    void vscode.window.showErrorMessage(`TcTidier: ${result.error}`);
   }
+  return result.edits;
 }
 
 function runFormatter(
@@ -155,7 +142,9 @@ async function formatWorkspaceFiles(
   }
 
   let formattedCount = 0;
+  let unchangedCount = 0;
   let skippedDirtyCount = 0;
+  const failedFiles: string[] = [];
 
   await vscode.window.withProgress(
     {
@@ -183,13 +172,19 @@ async function formatWorkspaceFiles(
         }
 
         const document = openDocument || (await vscode.workspace.openTextDocument(uri));
-        const edits = provideFormattingEdits(context, document, token);
-        if (edits.length === 0) {
+        const result = tryCreateFormattingEdits(context, document, token);
+        if (result.error) {
+          failedFiles.push(vscode.workspace.asRelativePath(uri));
+          continue;
+        }
+
+        if (result.edits.length === 0) {
+          unchangedCount += 1;
           continue;
         }
 
         const workspaceEdit = new vscode.WorkspaceEdit();
-        for (const edit of edits) {
+        for (const edit of result.edits) {
           workspaceEdit.replace(uri, edit.range, edit.newText);
         }
 
@@ -204,11 +199,60 @@ async function formatWorkspaceFiles(
     }
   );
 
+  const summary = [
+    `formatted ${formattedCount}`,
+    `unchanged ${unchangedCount}`
+  ];
+
+  if (skippedDirtyCount > 0) {
+    summary.push(`skipped dirty ${skippedDirtyCount}`);
+  }
+
+  if (failedFiles.length > 0) {
+    summary.push(`failed ${failedFiles.length}`);
+    void vscode.window.showWarningMessage(
+      `TcTidier: Workspace formatting completed with failures: ${summary.join(", ")}.`,
+      "Show Failed Files"
+    ).then((selection) => {
+      if (selection === "Show Failed Files") {
+        void vscode.window.showInformationMessage(
+          `TcTidier failed files: ${failedFiles.join(", ")}`
+        );
+      }
+    });
+    return;
+  }
+
   void vscode.window.showInformationMessage(
-    skippedDirtyCount > 0
-      ? `TcTidier: Formatted ${formattedCount} of ${files.length} workspace files. Skipped ${skippedDirtyCount} dirty file(s).`
-      : `TcTidier: Formatted ${formattedCount} of ${files.length} workspace files.`
+    `TcTidier: Workspace formatting completed: ${summary.join(", ")}.`
   );
+}
+
+function tryCreateFormattingEdits(
+  context: vscode.ExtensionContext,
+  document: vscode.TextDocument,
+  token: vscode.CancellationToken
+): { edits: vscode.TextEdit[]; error: string | null } {
+  try {
+    const source = document.getText();
+    const formatted = runFormatter(context, document, source, token);
+    if (formatted === source) {
+      return { edits: [], error: null };
+    }
+
+    const fullRange = new vscode.Range(
+      document.positionAt(0),
+      document.positionAt(source.length)
+    );
+
+    return {
+      edits: [vscode.TextEdit.replace(fullRange, formatted)],
+      error: null
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { edits: [], error: message };
+  }
 }
 
 function updateStatusBar(

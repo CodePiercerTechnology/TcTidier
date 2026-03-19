@@ -10,7 +10,7 @@ It formats the active document, can format all supported TwinCAT files in a work
 - Manual formatting from the command palette, editor toolbar, or status bar
 - Workspace formatting command for bulk cleanup
 - Config lookup via `.tctidier.json`
-- Deterministic formatting with committed fixture and phase tests
+- Deterministic formatting with committed fixture, phase, and integration tests
 - Benchmark smoke check to catch obvious performance regressions
 
 ## Repo Layout
@@ -19,18 +19,24 @@ It formats the active document, can format all supported TwinCAT files in a work
 src/           Extension entrypoint and native formatter
 tests/         Fixture corpus and focused phase tests
 benchmarks/    Native formatter benchmark scripts and baseline
-docs/          Quickstart, guide, changelog, and contribution notes
+docs/          Quickstart, guide, and contribution notes
 .vscode/       Launch/tasks for debugging the extension
 ```
 
-## Install And Build
+## GitFlow
 
-This repo uses `.npmrc` to trust `C:/certs/zscaler.pem`.
+This repo now uses `main` for production history and `develop` for ongoing integration work. Create `feature/*` branches from `develop`, cut `release/*` branches when preparing a version, and use `hotfix/*` only for urgent fixes from `main`.
+
+`npm run release:check` runs the full verification path and packages a local `.vsix` so release branches and tags are validated the same way in local work and CI.
+
+## Install And Build
 
 ```bash
 npm install
 npm run build
 ```
+
+If you are behind a corporate proxy or custom CA, configure npm on your machine or CI environment. Do not commit machine-specific npm certificate settings to this repo.
 
 ## Run In VS Code
 
@@ -54,8 +60,14 @@ Recommended VS Code settings:
 ## Package And Install Locally
 
 ```bash
-vsce package
-code --install-extension tctidier-0.1.0.vsix --force
+npm run package:vsix
+code --install-extension tctidier-0.1.2.vsix --force
+```
+
+After public publish, you can also install it directly with:
+
+```bash
+code --install-extension CodePiercerTechnologies.tctidier
 ```
 
 ## Commands
@@ -125,12 +137,15 @@ npm run bench:compare
 npm run verify
 ```
 
+`npm test` runs formatter-core tests plus VS Code integration tests. The integration runner uses a local VS Code install when available and falls back to `@vscode/test-electron` downloads otherwise.
+
 ## More Docs
 
 - [Quickstart](docs/QUICKSTART.md)
 - [Formatter Guide](docs/FORMATTER_GUIDE.md)
 - [Contributing](docs/CONTRIBUTING.md)
-- [Changelog](docs/CHANGELOG.md)
+- [GitFlow](docs/GITFLOW.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 
