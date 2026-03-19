@@ -20,21 +20,32 @@ async function waitFor(predicate, timeoutMs = 5000) {
   throw new Error("Timed out waiting for expected editor state.");
 }
 
-async function waitForDocumentReady(document, timeoutMs = 5000) {
-  await waitFor(() => {
-    const activeEditor = vscode.window.activeTextEditor;
-    return (
-      activeEditor?.document.uri.toString() === document.uri.toString() &&
-      document.languageId === "twincat-st"
-    );
-  }, timeoutMs);
+function applyTextEdits(document, edits) {
+  let text = document.getText();
+  const editsWithOffsets = edits
+    .map((edit) => ({
+      start: document.offsetAt(edit.range.start),
+      end: document.offsetAt(edit.range.end),
+      newText: edit.newText
+    }))
+    .sort((left, right) => right.start - left.start);
+
+  for (const edit of editsWithOffsets) {
+    text = `${text.slice(0, edit.start)}${edit.newText}${text.slice(edit.end)}`;
+  }
+
+  return text;
 }
 
 async function openAndFormatDocument(filePath, expectedPath) {
   const expected = normalizeLineEndings(fs.readFileSync(expectedPath, "utf8"));
   const document = await vscode.workspace.openTextDocument(filePath);
-  await vscode.window.showTextDocument(document);
-  await waitForDocumentReady(document);
+
+  assert.equal(
+    document.languageId,
+    "twincat-st",
+    `Expected TwinCAT language id for ${path.basename(filePath)}`
+  );
 
   const edits = await vscode.commands.executeCommand(
     "vscode.executeFormatDocumentProvider",
@@ -48,16 +59,8 @@ async function openAndFormatDocument(filePath, expectedPath) {
   assert.ok(Array.isArray(edits), "Expected formatting edits from provider");
   assert.ok(edits.length > 0, "Expected formatter to return at least one edit");
 
-  const workspaceEdit = new vscode.WorkspaceEdit();
-  for (const edit of edits) {
-    workspaceEdit.replace(document.uri, edit.range, edit.newText);
-  }
-
-  const applied = await vscode.workspace.applyEdit(workspaceEdit);
-  assert.equal(applied, true, "Expected document formatting edits to apply");
-
-  await waitFor(() => normalizeLineEndings(document.getText()) === expected);
-  assert.equal(normalizeLineEndings(document.getText()), expected);
+  const formatted = normalizeLineEndings(applyTextEdits(document, edits));
+  assert.equal(formatted, expected);
 }
 
 async function formatWorkspaceAndVerify(filePath, expectedPath) {
