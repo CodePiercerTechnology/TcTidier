@@ -9,7 +9,7 @@ TcTidier now follows a lightweight GitFlow model:
 - `feature/<short-name>`
   Branch from `develop` for formatter changes, docs updates, test work, and tooling.
 - `release/<version>`
-  Branch from `develop` when preparing a release candidate such as `release/0.1.1`.
+  Branch from `develop` when preparing a release candidate such as `release/0.1.2`.
 - `hotfix/<version>`
   Branch from `main` for urgent fixes that must ship before the next normal release.
 
@@ -38,7 +38,7 @@ git checkout -b feature/short-name
 
 git checkout develop
 git pull --ff-only origin develop
-git checkout -b release/0.1.1
+git checkout -b release/0.1.2
 
 git checkout main
 git pull --ff-only origin main
@@ -49,6 +49,7 @@ git checkout -b hotfix/0.1.2
 
 - CI runs on `main`, `develop`, `feature/*`, `release/*`, and `hotfix/*`.
 - Tag pushes matching `v*` package the extension, publish the generated `.vsix` to a GitHub release, and can publish to extension registries when secrets are configured.
+- Manual `workflow_dispatch` runs can re-publish an existing `v*` tag when a release needs to be retried after workflow fixes or secret changes.
 - `npm run release:check` verifies the repo and creates a local `.vsix` package before a release PR or tag.
 
 ## GitHub Settings To Apply

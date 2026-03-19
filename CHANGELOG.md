@@ -14,6 +14,9 @@
 - CI now runs across GitFlow branch patterns instead of only the default branch.
 - Release preparation now has a single `npm run release:check` entrypoint for verification plus packaging.
 - Removed the repo-level machine-specific npm certificate configuration and moved that guidance into docs.
+- Hardened the VS Code integration runner against Windows temp-profile cleanup races and downloaded-runtime quirks.
+- Reduced `npm run verify` time by building once per run and caching the VS Code test runtime in CI.
+- Release automation now supports manual republishing for an existing release tag and validates tag-to-version alignment.
 
 ## [0.1.1] - 2026-03-04
 

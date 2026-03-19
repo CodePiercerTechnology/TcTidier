@@ -61,7 +61,7 @@ Recommended VS Code settings:
 
 ```bash
 npm run package:vsix
-code --install-extension tctidier-0.1.1.vsix --force
+code --install-extension tctidier-0.1.2.vsix --force
 ```
 
 After public publish, you can also install it directly with:

@@ -5,9 +5,30 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Existing release tag to package or publish
+        required: true
+        default: v0.1.2
+        type: string
+      publish_marketplace:
+        description: Publish to VS Code Marketplace
+        required: true
+        default: true
+        type: boolean
+      publish_openvsx:
+        description: Publish to Open VSX
+        required: true
+        default: true
+        type: boolean
+      publish_github_release:
+        description: Create or update the GitHub release and attach the VSIX
+        required: true
+        default: true
+        type: boolean
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -16,12 +37,15 @@ jobs:
     permissions:
       contents: write
     env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.ref_name }}
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,27 +63,40 @@ jobs:
           NPM_CONFIG_CAFILE: ""
         run: npm run release:check
 
+      - name: Validate release tag and package version
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^v\d+\.\d+\.\d+$') {
+            throw "Release tag '$env:RELEASE_TAG' must match vX.Y.Z."
+          }
+
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          $expectedTag = "v$($package.version)"
+          if ($env:RELEASE_TAG -ne $expectedTag) {
+            throw "Release tag '$env:RELEASE_TAG' does not match package.json version '$($package.version)'."
+          }
+
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tctidier-vsix-${{ github.ref_name }}
+          name: tctidier-vsix-${{ env.RELEASE_TAG }}
           path: "*.vsix"
 
       - name: Publish to VS Code Marketplace
-        if: startsWith(github.ref, 'refs/tags/') && env.VSCE_PAT != ''
+        if: (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') && env.VSCE_PAT != '' && (github.event_name != 'workflow_dispatch' || inputs.publish_marketplace)
         run: |
           $vsix = (Get-ChildItem *.vsix | Select-Object -First 1).FullName
           npx vsce publish --packagePath $vsix --pat $env:VSCE_PAT --skip-duplicate
 
       - name: Publish to Open VSX
-        if: startsWith(github.ref, 'refs/tags/') && env.OVSX_PAT != ''
+        if: (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') && env.OVSX_PAT != '' && (github.event_name != 'workflow_dispatch' || inputs.publish_openvsx)
         run: |
           $vsix = (Get-ChildItem *.vsix | Select-Object -First 1).FullName
           npx ovsx publish --packagePath $vsix -p $env:OVSX_PAT --skip-duplicate
 
       - name: Publish GitHub release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') && (github.event_name != 'workflow_dispatch' || inputs.publish_github_release)
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           files: "*.vsix"
           generate_release_notes: true
