@@ -7,7 +7,14 @@ const { formatDocumentText } = require("../out/native/formatter");
 const ROOT = path.resolve(__dirname, "..");
 const FIXTURE_INPUT_DIR = path.join(__dirname, "fixtures", "input");
 const FIXTURE_EXPECTED_DIR = path.join(__dirname, "fixtures", "expected");
-const SAMPLE_EXTENSIONS = new Set([".TcPOU", ".TcGVL", ".TcDUT", ".TcIO"]);
+const SAMPLE_EXTENSIONS = new Set([
+  ".TcPOU",
+  ".TcGVL",
+  ".TcDUT",
+  ".TcIO",
+  ".st",
+  ".iecst"
+]);
 
 const fixtures = fs
   .readdirSync(FIXTURE_INPUT_DIR)

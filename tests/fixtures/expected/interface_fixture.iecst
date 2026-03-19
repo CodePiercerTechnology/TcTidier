@@ -1,0 +1,7 @@
+FUNCTION InterfaceFixture : BOOL
+VAR_INPUT
+    enable : BOOL;
+END_VAR
+IF enable THEN
+    InterfaceFixture := TRUE;
+END_IF
