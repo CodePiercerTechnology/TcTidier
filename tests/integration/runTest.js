@@ -44,16 +44,22 @@ async function removeDirectoryWithRetries(directory, attempts = 20, delayMs = 25
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
       fs.rmSync(directory, { recursive: true, force: true });
-      return;
+      return true;
     } catch (error) {
       const code = error && typeof error === "object" ? error.code : undefined;
       const retryable = code === "EPERM" || code === "EBUSY" || code === "ENOTEMPTY";
       if (!retryable || attempt === attempts) {
-        throw error;
+        console.warn(
+          `Warning: failed to remove temporary test directory ${directory}:`,
+          error
+        );
+        return false;
       }
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
+
+  return false;
 }
 
 async function main() {
