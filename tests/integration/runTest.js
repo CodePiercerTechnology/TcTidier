@@ -1,6 +1,11 @@
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
-const { runTests } = require("@vscode/test-electron");
+const {
+  downloadAndUnzipVSCode,
+  resolveCliPathFromVSCodeExecutablePath,
+  runTests
+} = require("@vscode/test-electron");
 
 function resolveVsCodeExecutablePath() {
   const candidates = [
@@ -22,15 +27,51 @@ function resolveVsCodeExecutablePath() {
   return undefined;
 }
 
+async function resolveVsCodeCliPath() {
+  const installedPath = resolveVsCodeExecutablePath();
+  if (installedPath) {
+    if (installedPath.toLowerCase().endsWith(".exe")) {
+      return resolveCliPathFromVSCodeExecutablePath(installedPath);
+    }
+    return installedPath;
+  }
+
+  const downloadedPath = await downloadAndUnzipVSCode();
+  return resolveCliPathFromVSCodeExecutablePath(downloadedPath);
+}
+
+async function removeDirectoryWithRetries(directory, attempts = 20, delayMs = 250) {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      fs.rmSync(directory, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      const code = error && typeof error === "object" ? error.code : undefined;
+      const retryable = code === "EPERM" || code === "EBUSY" || code === "ENOTEMPTY";
+      if (!retryable || attempt === attempts) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}
+
 async function main() {
   const repoRoot = path.resolve(__dirname, "..", "..");
   const templateWorkspace = path.join(__dirname, "workspace-template");
-  const tempWorkspace = path.join(__dirname, ".tmp-workspace");
+  const tempWorkspace = fs.mkdtempSync(
+    path.join(os.tmpdir(), "tctidier-workspace-")
+  );
+  const userDataDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), "tctidier-userdata-")
+  );
+  const extensionsDir = fs.mkdtempSync(
+    path.join(os.tmpdir(), "tctidier-extensions-")
+  );
   const extensionDevelopmentPath = repoRoot;
   const extensionTestsPath = path.join(__dirname, "suite");
-  const vscodeExecutablePath = resolveVsCodeExecutablePath();
+  const vscodeExecutablePath = await resolveVsCodeCliPath();
 
-  fs.rmSync(tempWorkspace, { recursive: true, force: true });
   fs.cpSync(templateWorkspace, tempWorkspace, { recursive: true });
   process.env.TCTIDIER_TEST_WORKSPACE = tempWorkspace;
 
@@ -39,10 +80,21 @@ async function main() {
       extensionDevelopmentPath,
       extensionTestsPath,
       vscodeExecutablePath,
-      launchArgs: ["--disable-extensions", tempWorkspace]
+      launchArgs: [
+        "--disable-extensions",
+        "--disable-updates",
+        "--skip-release-notes",
+        "--skip-welcome",
+        "--disable-workspace-trust",
+        `--user-data-dir=${userDataDir}`,
+        `--extensions-dir=${extensionsDir}`,
+        tempWorkspace
+      ]
     });
   } finally {
-    fs.rmSync(tempWorkspace, { recursive: true, force: true });
+    await removeDirectoryWithRetries(tempWorkspace);
+    await removeDirectoryWithRetries(userDataDir);
+    await removeDirectoryWithRetries(extensionsDir);
   }
 }
 
