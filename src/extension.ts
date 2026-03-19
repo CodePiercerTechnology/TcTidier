@@ -24,6 +24,7 @@ const FORMATTER_SELECTORS: vscode.DocumentSelector = [
   { language: "structured-text" },
   { language: "iecst" },
   { language: "iec-st" },
+  { scheme: "twincat", language: "iec-st" },
   { scheme: "file", pattern: "**/*.TcPOU" },
   { scheme: "file", pattern: "**/*.TcGVL" },
   { scheme: "file", pattern: "**/*.TcDUT" },

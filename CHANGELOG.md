@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-03-19
+
+### Fixed
+
+- Added an explicit `{ scheme: "twincat", language: "iec-st" }` formatter selector so `TcTidier` works reliably with `TcView` virtual documents.
+
+### Changed
+
+- Trimmed redundant activation events from the extension manifest.
+
+## [0.1.2] - 2026-03-19
+
 ### Added
 
 - GitFlow documentation for `develop`, `feature/*`, `release/*`, and `hotfix/*` branch usage.

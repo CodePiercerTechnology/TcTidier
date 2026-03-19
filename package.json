@@ -2,7 +2,7 @@
   "name": "tctidier",
   "displayName": "TcTidier",
   "description": "Format TwinCAT Structured Text files with a native TypeScript formatter.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "CodePiercerTechnologies",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -59,12 +59,9 @@
     "workspace"
   ],
   "activationEvents": [
-    "onLanguage:twincat-st",
     "onLanguage:structured-text",
     "onLanguage:iecst",
-    "onLanguage:iec-st",
-    "onCommand:tctidier.formatDocument",
-    "onCommand:tctidier.formatWorkspace"
+    "onLanguage:iec-st"
   ],
   "contributes": {
     "languages": [
