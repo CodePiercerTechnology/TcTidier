@@ -4,11 +4,21 @@ on:
   push:
     branches:
       - main
-      - master
+      - develop
+      - "feature/**"
+      - "release/**"
+      - "hotfix/**"
   pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-test:
+  verify:
     runs-on: windows-latest
 
     steps:
@@ -26,17 +36,7 @@ jobs:
           NPM_CONFIG_CAFILE: ""
         run: npm ci
 
-      - name: Build
+      - name: Verify
         env:
           NPM_CONFIG_CAFILE: ""
-        run: npm run build
-
-      - name: Test
-        env:
-          NPM_CONFIG_CAFILE: ""
-        run: npm test
-
-      - name: Benchmark smoke check
-        env:
-          NPM_CONFIG_CAFILE: ""
-        run: npm run bench:compare
+        run: npm run verify

@@ -38,6 +38,8 @@
     "bench": "npm run build && node benchmarks/native-benchmark.js",
     "bench:compare": "npm run build && node benchmarks/compare-benchmark.js",
     "verify": "npm run test && npm run bench:compare",
+    "package:vsix": "npx @vscode/vsce package",
+    "release:check": "npm run package:vsix",
     "vscode:prepublish": "npm run verify"
   },
   "main": "./out/extension.js",

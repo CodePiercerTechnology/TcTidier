@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+
+- GitFlow documentation for `develop`, `feature/*`, `release/*`, and `hotfix/*` branch usage.
+- A release workflow that verifies the repo, packages the extension, and publishes `.vsix` artifacts on `v*` tags.
+
+### Changed
+
+- CI now runs across GitFlow branch patterns instead of only the default branch.
+- Release preparation now has a single `npm run release:check` entrypoint for verification plus packaging.
+
 ## [0.1.1] - 2026-03-04
 
 ### Changed
