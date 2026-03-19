@@ -62,3 +62,4 @@ These settings still need to be configured in GitHub because they are not stored
 - Keep release tags in the form `vX.Y.Z` so the release workflow can detect them.
 - Add `VSCE_PAT` if you want tag pushes to publish to the VS Code Marketplace.
 - Add `OVSX_PAT` and create the `CodePiercerTechnologies` namespace on Open VSX if you want public Open VSX publishing.
+- Apply the versioned ruleset templates from `.github/rulesets/`.

@@ -7,6 +7,7 @@
 - GitFlow documentation for `develop`, `feature/*`, `release/*`, and `hotfix/*` branch usage.
 - A release workflow that verifies the repo, packages the extension, and publishes `.vsix` artifacts on `v*` tags.
 - Public-release scaffolding for VS Code Marketplace and Open VSX publishing, plus community health files and issue templates.
+- Source-controlled GitHub ruleset templates plus a helper script to apply them through the GitHub API.
 
 ### Changed
 
