@@ -298,6 +298,34 @@ test("indentLines backs out to the CASE base indent after nested branch blocks",
   ]);
 });
 
+test("indentLines treats END_CASE with semicolon as a real case closer", () => {
+  const config = createConfig({ useTabs: false, indent: 4 });
+  const indented = indentLines(
+    [
+      "CASE ValveFeedback OF",
+      "E_ValveOpenClose_Feedback.OpenAndClose:\tbaseFeedback := OnAndOff;",
+      "E_ValveOpenClose_Feedback.None: \t\tbaseFeedback := None;",
+      "END_CASE;",
+      "",
+      "fbValveBase.SetConfiguration(",
+      "ValveFeedback := baseFeedback",
+      ");"
+    ],
+    config
+  );
+
+  assert.deepEqual(indented, [
+    "CASE ValveFeedback OF",
+    "    E_ValveOpenClose_Feedback.OpenAndClose: baseFeedback := OnAndOff;",
+    "    E_ValveOpenClose_Feedback.None: baseFeedback := None;",
+    "END_CASE;",
+    "",
+    "fbValveBase.SetConfiguration(",
+    "    ValveFeedback := baseFeedback",
+    ");"
+  ]);
+});
+
 test("indentLines resets leaked indent at METHOD boundaries", () => {
   const config = createConfig({ useTabs: false, indent: 4 });
   const indented = indentLines(

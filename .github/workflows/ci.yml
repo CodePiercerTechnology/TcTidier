@@ -4,11 +4,22 @@ on:
   push:
     branches:
       - main
-      - master
+      - develop
+      - "feature/**"
+      - "release/**"
+      - "hotfix/**"
   pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-test:
+  verify:
+    name: Build, Test, Package
     runs-on: windows-latest
 
     steps:
@@ -20,23 +31,20 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Cache VS Code test runtime
+        uses: actions/cache@v4
+        with:
+          path: .vscode-test
+          key: vscode-test-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json', 'tests/integration/runTest.js') }}
 
       - name: Install dependencies
         env:
           NPM_CONFIG_CAFILE: ""
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit --fund=false
 
-      - name: Build
+      - name: Verify
         env:
           NPM_CONFIG_CAFILE: ""
-        run: npm run build
-
-      - name: Test
-        env:
-          NPM_CONFIG_CAFILE: ""
-        run: npm test
-
-      - name: Benchmark smoke check
-        env:
-          NPM_CONFIG_CAFILE: ""
-        run: npm run bench:compare
+        run: npm run verify

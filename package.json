@@ -2,7 +2,7 @@
   "name": "tctidier",
   "displayName": "TcTidier",
   "description": "Format TwinCAT Structured Text files with a native TypeScript formatter.",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "publisher": "CodePiercerTechnologies",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -32,17 +32,26 @@
     "clean": "node -e \"require('fs').rmSync('out', { recursive: true, force: true })\"",
     "build": "tsc -p .",
     "watch": "tsc -w -p .",
-    "bench": "npm run build && node benchmarks/native-benchmark.js",
-    "bench:compare": "npm run build && node benchmarks/compare-benchmark.js",
-    "verify": "npm run test && npm run bench:compare",
-    "vscode:prepublish": "npm run build",
-    "test": "npm run build && node --test tests/*.test.js"
+    "test:unit:only": "node --test tests/*.test.js",
+    "test:unit": "npm run build && npm run test:unit:only",
+    "test:integration:only": "node tests/integration/runTest.js",
+    "test:integration": "npm run build && npm run test:integration:only",
+    "test": "npm run build && npm run test:unit:only && npm run test:integration:only",
+    "bench:only": "node benchmarks/native-benchmark.js",
+    "bench": "npm run build && npm run bench:only",
+    "bench:compare:only": "node benchmarks/compare-benchmark.js",
+    "bench:compare": "npm run build && npm run bench:compare:only",
+    "verify": "npm run build && npm run test:unit:only && npm run test:integration:only && npm run bench:compare:only",
+    "package:vsix": "vsce package",
+    "release:check": "npm run package:vsix",
+    "vscode:prepublish": "npm run verify"
   },
   "main": "./out/extension.js",
   "files": [
     "out/**",
     "media/**",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "language-configuration.json"
   ],
@@ -50,12 +59,9 @@
     "workspace"
   ],
   "activationEvents": [
-    "onLanguage:twincat-st",
     "onLanguage:structured-text",
     "onLanguage:iecst",
-    "onLanguage:iec-st",
-    "onCommand:tctidier.formatDocument",
-    "onCommand:tctidier.formatWorkspace"
+    "onLanguage:iec-st"
   ],
   "contributes": {
     "languages": [
@@ -93,12 +99,12 @@
         {
           "command": "tctidier.formatDocument",
           "group": "navigation@100",
-          "when": "editorTextFocus"
+          "when": "editorTextFocus && (editorLangId == twincat-st || editorLangId == structured-text || editorLangId == iecst || editorLangId == iec-st || resourceFilename =~ /.*\\.(TcPOU|TcGVL|TcDUT|TcIO|tcpou|tcgvl|tcdut|tcio|st|iecst)$/)"
         },
         {
           "command": "tctidier.formatWorkspace",
           "group": "navigation@101",
-          "when": "editorTextFocus"
+          "when": "editorTextFocus && (editorLangId == twincat-st || editorLangId == structured-text || editorLangId == iecst || editorLangId == iec-st || resourceFilename =~ /.*\\.(TcPOU|TcGVL|TcDUT|TcIO|tcpou|tcgvl|tcdut|tcio|st|iecst)$/)"
         }
       ]
     },
@@ -110,6 +116,9 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.6.1",
+    "@vscode/test-electron": "^2.5.2",
+    "ovsx": "^0.10.9",
     "typescript": "^5.9.2"
   }
 }

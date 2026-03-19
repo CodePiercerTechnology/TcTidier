@@ -18,8 +18,9 @@ const PROPERTY_PATTERN = /^\s*PROPERTY\b/i;
 const END_FUNCTION_PATTERN = /^\s*END_(FUNCTION_BLOCK|FUNCTION)\s*$/i;
 const CASE_START_PATTERN = /^\s*CASE\s+/i;
 const OF_PATTERN = /\bOF\b/i;
-const END_CASE_PATTERN = /^\s*END_CASE\s*$/i;
+const END_CASE_PATTERN = /^\s*END_CASE\s*;?\s*$/i;
 const CASE_LABEL_PATTERN = /^[\w.]+\s*:\s*$/;
+const CASE_INLINE_BRANCH_PATTERN = /^([\w.]+)\s*:(?!\=)\s*(.+)$/;
 const ELSE_PATTERN = /^\s*ELSE\s*$/i;
 const ELSIF_PATTERN = /^\s*ELSIF\b/i;
 const MULTILINE_CALL_OPEN_PATTERN =
@@ -206,6 +207,19 @@ export function indentLines(lines: string[], config: Config): string[] {
       indentLevel = baseIndent + 2;
       index += 1;
       continue;
+    }
+
+    if (caseStack.length > 0) {
+      const inlineBranchMatch = CASE_INLINE_BRANCH_PATTERN.exec(stripped);
+      if (inlineBranchMatch) {
+        const baseIndent = caseStack[caseStack.length - 1];
+        output.push(
+          `${config.indentStr.repeat(baseIndent + 1)}${inlineBranchMatch[1]}: ${inlineBranchMatch[2].trim()}`
+        );
+        indentLevel = baseIndent + 1;
+        index += 1;
+        continue;
+      }
     }
 
     if (caseStack.length > 0 && ELSE_PATTERN.test(upper)) {

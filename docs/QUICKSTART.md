@@ -9,7 +9,7 @@ npm install
 npm run build
 ```
 
-The repo ships `.npmrc` for `C:/certs/zscaler.pem`, so `npm install` should work in your Zscaler environment.
+If you are behind a corporate proxy or custom CA, configure npm on your machine or CI environment instead of committing machine-specific npm settings to the repo.
 
 ## Debug The Extension
 
@@ -29,8 +29,8 @@ To keep rebuilding while you edit, use `Run TcTidier Extension (Watch)`.
 ## Package And Install Locally
 
 ```bash
-vsce package
-code --install-extension tctidier-0.1.0.vsix --force
+npm run package:vsix
+code --install-extension tctidier-0.1.2.vsix --force
 ```
 
 ## Recommended VS Code Settings
@@ -70,4 +70,4 @@ docs/              Project documentation
 - [README](../README.md)
 - [Formatter Guide](FORMATTER_GUIDE.md)
 - [Contributing](CONTRIBUTING.md)
-- [Changelog](CHANGELOG.md)
+- [Changelog](../CHANGELOG.md)
