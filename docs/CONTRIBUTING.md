@@ -11,6 +11,8 @@ npm run build
 
 For interactive debugging, open the repo in VS Code and press `F5`.
 
+If you need custom npm certificate or proxy settings, keep them in your user-level npm config or CI secrets rather than in committed repo files.
+
 ## Branching Model
 
 This repo uses GitFlow:

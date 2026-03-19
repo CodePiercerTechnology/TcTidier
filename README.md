@@ -31,12 +31,12 @@ This repo now uses `main` for production history and `develop` for ongoing integ
 
 ## Install And Build
 
-This repo uses `.npmrc` to trust `C:/certs/zscaler.pem`.
-
 ```bash
 npm install
 npm run build
 ```
+
+If you are behind a corporate proxy or custom CA, configure npm on your machine or CI environment. Do not commit machine-specific npm certificate settings to this repo.
 
 ## Run In VS Code
 
@@ -62,6 +62,12 @@ Recommended VS Code settings:
 ```bash
 npm run package:vsix
 code --install-extension tctidier-0.1.1.vsix --force
+```
+
+After public publish, you can also install it directly with:
+
+```bash
+code --install-extension CodePiercerTechnologies.tctidier
 ```
 
 ## Commands
