@@ -48,7 +48,7 @@ git checkout -b hotfix/0.1.2
 ## Repo Automation
 
 - CI runs on `main`, `develop`, `feature/*`, `release/*`, and `hotfix/*`.
-- Tag pushes matching `v*` package the extension and publish the generated `.vsix` to a GitHub release.
+- Tag pushes matching `v*` package the extension, publish the generated `.vsix` to a GitHub release, and can publish to extension registries when secrets are configured.
 - `npm run release:check` verifies the repo and creates a local `.vsix` package before a release PR or tag.
 
 ## GitHub Settings To Apply
@@ -60,3 +60,6 @@ These settings still need to be configured in GitHub because they are not stored
 - Require PR review plus passing CI on protected branches.
 - Restrict direct pushes to `main` and `develop`.
 - Keep release tags in the form `vX.Y.Z` so the release workflow can detect them.
+- Add `VSCE_PAT` if you want tag pushes to publish to the VS Code Marketplace.
+- Add `OVSX_PAT` and create the `CodePiercerTechnologies` namespace on Open VSX if you want public Open VSX publishing.
+- Apply the versioned ruleset templates from `.github/rulesets/`.

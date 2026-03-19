@@ -20,15 +20,47 @@ async function waitFor(predicate, timeoutMs = 5000) {
   throw new Error("Timed out waiting for expected editor state.");
 }
 
+function applyTextEdits(document, edits) {
+  let text = document.getText();
+  const editsWithOffsets = edits
+    .map((edit) => ({
+      start: document.offsetAt(edit.range.start),
+      end: document.offsetAt(edit.range.end),
+      newText: edit.newText
+    }))
+    .sort((left, right) => right.start - left.start);
+
+  for (const edit of editsWithOffsets) {
+    text = `${text.slice(0, edit.start)}${edit.newText}${text.slice(edit.end)}`;
+  }
+
+  return text;
+}
+
 async function openAndFormatDocument(filePath, expectedPath) {
   const expected = normalizeLineEndings(fs.readFileSync(expectedPath, "utf8"));
   const document = await vscode.workspace.openTextDocument(filePath);
-  const editor = await vscode.window.showTextDocument(document);
 
-  await vscode.commands.executeCommand("editor.action.formatDocument");
-  await waitFor(() => normalizeLineEndings(editor.document.getText()) === expected);
+  assert.equal(
+    document.languageId,
+    "twincat-st",
+    `Expected TwinCAT language id for ${path.basename(filePath)}`
+  );
 
-  assert.equal(normalizeLineEndings(editor.document.getText()), expected);
+  const edits = await vscode.commands.executeCommand(
+    "vscode.executeFormatDocumentProvider",
+    document.uri,
+    {
+      insertSpaces: true,
+      tabSize: 4
+    }
+  );
+
+  assert.ok(Array.isArray(edits), "Expected formatting edits from provider");
+  assert.ok(edits.length > 0, "Expected formatter to return at least one edit");
+
+  const formatted = normalizeLineEndings(applyTextEdits(document, edits));
+  assert.equal(formatted, expected);
 }
 
 async function formatWorkspaceAndVerify(filePath, expectedPath) {

@@ -6,11 +6,14 @@
 
 - GitFlow documentation for `develop`, `feature/*`, `release/*`, and `hotfix/*` branch usage.
 - A release workflow that verifies the repo, packages the extension, and publishes `.vsix` artifacts on `v*` tags.
+- Public-release scaffolding for VS Code Marketplace and Open VSX publishing, plus community health files and issue templates.
+- Source-controlled GitHub ruleset templates plus a helper script to apply them through the GitHub API.
 
 ### Changed
 
 - CI now runs across GitFlow branch patterns instead of only the default branch.
 - Release preparation now has a single `npm run release:check` entrypoint for verification plus packaging.
+- Removed the repo-level machine-specific npm certificate configuration and moved that guidance into docs.
 
 ## [0.1.1] - 2026-03-04
 
