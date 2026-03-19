@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   verify:
+    name: Build, Test, Package
     runs-on: windows-latest
 
     steps:
