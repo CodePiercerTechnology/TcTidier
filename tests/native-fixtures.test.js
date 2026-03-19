@@ -21,6 +21,10 @@ const fixtures = fs
   .filter((entry) => SAMPLE_EXTENSIONS.has(path.extname(entry)))
   .sort();
 
+function normalizeLineEndings(text) {
+  return text.replace(/\r\n/g, "\n");
+}
+
 test("fixture snapshots exist", () => {
   assert.ok(fixtures.length > 0, "expected at least one fixture");
 
@@ -37,20 +41,20 @@ for (const fixture of fixtures) {
   test(`formats fixture ${fixture}`, () => {
     const inputPath = path.join(FIXTURE_INPUT_DIR, fixture);
     const expectedPath = path.join(FIXTURE_EXPECTED_DIR, fixture);
-    const input = fs.readFileSync(inputPath, "utf8");
-    const expected = fs.readFileSync(expectedPath, "utf8");
+    const input = normalizeLineEndings(fs.readFileSync(inputPath, "utf8"));
+    const expected = normalizeLineEndings(fs.readFileSync(expectedPath, "utf8"));
 
-    const actual = formatDocumentText(input, {
+    const actual = normalizeLineEndings(formatDocumentText(input, {
       stdinFilepath: inputPath,
       workspaceRoot: ROOT
-    });
+    }));
 
     assert.equal(actual, expected);
     assert.equal(
-      formatDocumentText(actual, {
+      normalizeLineEndings(formatDocumentText(actual, {
         stdinFilepath: inputPath,
         workspaceRoot: ROOT
-      }),
+      })),
       expected,
       `formatter should be idempotent for ${fixture}`
     );

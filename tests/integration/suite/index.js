@@ -3,6 +3,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vscode = require("vscode");
 
+function normalizeLineEndings(text) {
+  return text.replace(/\r\n/g, "\n");
+}
+
 async function waitFor(predicate, timeoutMs = 5000) {
   const start = Date.now();
 
@@ -17,23 +21,25 @@ async function waitFor(predicate, timeoutMs = 5000) {
 }
 
 async function openAndFormatDocument(filePath, expectedPath) {
-  const expected = fs.readFileSync(expectedPath, "utf8");
+  const expected = normalizeLineEndings(fs.readFileSync(expectedPath, "utf8"));
   const document = await vscode.workspace.openTextDocument(filePath);
   const editor = await vscode.window.showTextDocument(document);
 
   await vscode.commands.executeCommand("editor.action.formatDocument");
-  await waitFor(() => editor.document.getText() === expected);
+  await waitFor(() => normalizeLineEndings(editor.document.getText()) === expected);
 
-  assert.equal(editor.document.getText(), expected);
+  assert.equal(normalizeLineEndings(editor.document.getText()), expected);
 }
 
 async function formatWorkspaceAndVerify(filePath, expectedPath) {
-  const expected = fs.readFileSync(expectedPath, "utf8");
+  const expected = normalizeLineEndings(fs.readFileSync(expectedPath, "utf8"));
 
   await vscode.commands.executeCommand("tctidier.formatWorkspace");
-  await waitFor(() => fs.readFileSync(filePath, "utf8") === expected);
+  await waitFor(
+    () => normalizeLineEndings(fs.readFileSync(filePath, "utf8")) === expected
+  );
 
-  assert.equal(fs.readFileSync(filePath, "utf8"), expected);
+  assert.equal(normalizeLineEndings(fs.readFileSync(filePath, "utf8")), expected);
 }
 
 async function activateExtension() {
