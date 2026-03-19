@@ -70,4 +70,4 @@ docs/              Project documentation
 - [README](../README.md)
 - [Formatter Guide](FORMATTER_GUIDE.md)
 - [Contributing](CONTRIBUTING.md)
-- [Changelog](CHANGELOG.md)
+- [Changelog](../CHANGELOG.md)

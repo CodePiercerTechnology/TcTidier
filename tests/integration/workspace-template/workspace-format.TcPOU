@@ -1,0 +1,5 @@
+PROGRAM WorkspaceFormatFixture
+VAR
+flag:BOOL;
+END_VAR
+IF flag THEN flag:=FALSE; END_IF

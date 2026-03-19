@@ -2,7 +2,7 @@
   "name": "tctidier",
   "displayName": "TcTidier",
   "description": "Format TwinCAT Structured Text files with a native TypeScript formatter.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "CodePiercerTechnologies",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -32,17 +32,22 @@
     "clean": "node -e \"require('fs').rmSync('out', { recursive: true, force: true })\"",
     "build": "tsc -p .",
     "watch": "tsc -w -p .",
+    "test:unit": "npm run build && node --test tests/*.test.js",
+    "test:integration": "npm run build && node tests/integration/runTest.js",
+    "test": "npm run test:unit && npm run test:integration",
     "bench": "npm run build && node benchmarks/native-benchmark.js",
     "bench:compare": "npm run build && node benchmarks/compare-benchmark.js",
     "verify": "npm run test && npm run bench:compare",
-    "vscode:prepublish": "npm run build",
-    "test": "npm run build && node --test tests/*.test.js"
+    "package:vsix": "npx @vscode/vsce package",
+    "release:check": "npm run package:vsix",
+    "vscode:prepublish": "npm run verify"
   },
   "main": "./out/extension.js",
   "files": [
     "out/**",
     "media/**",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "language-configuration.json"
   ],
@@ -93,12 +98,12 @@
         {
           "command": "tctidier.formatDocument",
           "group": "navigation@100",
-          "when": "editorTextFocus"
+          "when": "editorTextFocus && (editorLangId == twincat-st || editorLangId == structured-text || editorLangId == iecst || editorLangId == iec-st || resourceFilename =~ /.*\\.(TcPOU|TcGVL|TcDUT|TcIO|tcpou|tcgvl|tcdut|tcio|st|iecst)$/)"
         },
         {
           "command": "tctidier.formatWorkspace",
           "group": "navigation@101",
-          "when": "editorTextFocus"
+          "when": "editorTextFocus && (editorLangId == twincat-st || editorLangId == structured-text || editorLangId == iecst || editorLangId == iec-st || resourceFilename =~ /.*\\.(TcPOU|TcGVL|TcDUT|TcIO|tcpou|tcgvl|tcdut|tcio|st|iecst)$/)"
         }
       ]
     },
@@ -110,6 +115,7 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.5.2",
     "typescript": "^5.9.2"
   }
 }

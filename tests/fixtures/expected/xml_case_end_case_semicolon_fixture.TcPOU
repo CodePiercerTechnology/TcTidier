@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_ValveDigital_NormallyClosed" Id="{61f97e29-11d9-4b5d-9345-d2feb9bac089}" SpecialFunc="None">
+    <Method Name="SetConfiguration" Id="{8423bbf8-6722-4905-bb98-b974dd0d8d2d}">
+      <Declaration><![CDATA[METHOD SetConfiguration
+VAR_INPUT
+    ValveFeedback : E_ValveOpenClose_Feedback := E_ValveOpenClose_Feedback.OpenAndClose;
+END_VAR
+VAR
+    baseFeedback  : E_ValveDigital_Feedback;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE ValveFeedback OF
+    E_ValveOpenClose_Feedback.OpenAndClose: baseFeedback := E_ValveDigital_Feedback.OnAndOff;
+    E_ValveOpenClose_Feedback.OnlyOpen: baseFeedback := E_ValveDigital_Feedback.OnlyOn;
+    E_ValveOpenClose_Feedback.OnlyClose: baseFeedback := E_ValveDigital_Feedback.OnlyOff;
+    E_ValveOpenClose_Feedback.None: baseFeedback := E_ValveDigital_Feedback.None;
+END_CASE;
+
+fbValveBase.SetConfiguration(
+    ValveFeedback := baseFeedback
+);
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
