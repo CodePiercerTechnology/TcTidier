@@ -22,21 +22,67 @@ function sleep(delayMs) {
   return new Promise((resolve) => setTimeout(resolve, delayMs));
 }
 
-function resolveVsCodeExecutablePath() {
-  const candidates = [
-    process.env.VSCODE_EXECUTABLE_PATH,
-    "C:\\Users\\TwinCAT\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\code.cmd",
-    "C:\\Program Files\\Microsoft VS Code\\bin\\code.cmd",
-    "C:\\Program Files (x86)\\Microsoft VS Code\\bin\\code.cmd",
-    "C:\\Users\\TwinCAT\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
-    "C:\\Program Files\\Microsoft VS Code\\Code.exe",
-    "C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe"
-  ].filter(Boolean);
+function uniqueExistingPaths(candidates) {
+  const seen = new Set();
+  const existing = [];
 
   for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return candidate;
+    if (!candidate || seen.has(candidate)) {
+      continue;
     }
+
+    seen.add(candidate);
+
+    if (fs.existsSync(candidate)) {
+      existing.push(candidate);
+    }
+  }
+
+  return existing;
+}
+
+function resolveExecutablesFromPath() {
+  const executableNames =
+    process.platform === "win32"
+      ? ["code.cmd", "code.exe", "code-insiders.cmd", "code-insiders.exe"]
+      : ["code", "code-insiders"];
+  const pathEntries = (process.env.PATH || "")
+    .split(path.delimiter)
+    .map((entry) => entry.trim().replace(/^"(.*)"$/, "$1"))
+    .filter(Boolean);
+
+  return pathEntries.flatMap((entry) =>
+    executableNames.map((name) => path.join(entry, name))
+  );
+}
+
+function resolveVsCodeExecutablePath() {
+  const localAppData = process.env.LOCALAPPDATA;
+  const programFiles = process.env.ProgramFiles;
+  const programFilesX86 = process.env["ProgramFiles(x86)"];
+  const installRoots = [
+    localAppData && path.join(localAppData, "Programs", "Microsoft VS Code"),
+    localAppData &&
+      path.join(localAppData, "Programs", "Microsoft VS Code Insiders"),
+    programFiles && path.join(programFiles, "Microsoft VS Code"),
+    programFiles && path.join(programFiles, "Microsoft VS Code Insiders"),
+    programFilesX86 && path.join(programFilesX86, "Microsoft VS Code"),
+    programFilesX86 &&
+      path.join(programFilesX86, "Microsoft VS Code Insiders")
+  ].filter(Boolean);
+  const candidates = [
+    process.env.VSCODE_EXECUTABLE_PATH,
+    ...installRoots.flatMap((root) => [
+      path.join(root, "bin", "code.cmd"),
+      path.join(root, "bin", "code-insiders.cmd"),
+      path.join(root, "Code.exe"),
+      path.join(root, "Code - Insiders.exe")
+    ]),
+    ...resolveExecutablesFromPath()
+  ];
+
+  for (const candidate of uniqueExistingPaths(candidates)) {
+    return candidate;
   }
 
   return undefined;
@@ -96,12 +142,14 @@ async function downloadVsCodeWithRetries() {
 async function resolveVsCodeCliPath() {
   const installedPath = resolveVsCodeExecutablePath();
   if (installedPath) {
+    console.log(`Using local VS Code executable: ${installedPath}`);
     if (installedPath.toLowerCase().endsWith(".exe")) {
       return resolveCliPathFromVSCodeExecutablePath(installedPath);
     }
     return installedPath;
   }
 
+  console.log("No local VS Code executable found. Downloading test runtime.");
   const downloadedPath = await downloadVsCodeWithRetries();
   return resolveCliPathFromVSCodeExecutablePath(downloadedPath);
 }
