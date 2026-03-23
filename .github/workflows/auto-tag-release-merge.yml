@@ -1,0 +1,63 @@
+name: Auto Tag Release Merge
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+concurrency:
+  group: auto-tag-release-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    if: >
+      github.event.pull_request.merged == true &&
+      (
+        startsWith(github.event.pull_request.head.ref, 'release/') ||
+        startsWith(github.event.pull_request.head.ref, 'hotfix/')
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout merged main commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Create release tag from package version
+        env:
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+
+          version=$(node -p "require('./package.json').version")
+          tag="v${version}"
+
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Derived invalid release tag: $tag"
+            exit 1
+          fi
+
+          git fetch --tags origin
+
+          if git show-ref --tags --verify --quiet "refs/tags/$tag"; then
+            echo "Tag $tag already exists; skipping."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "$tag" "$MERGE_SHA" -m "Release $tag"
+          git push origin "$tag"
