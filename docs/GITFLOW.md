@@ -21,8 +21,8 @@ TcTidier now follows a lightweight GitFlow model:
 4. Open PRs from `feature/*` into `develop`.
 5. Cut `release/<version>` from `develop` when the next release is ready.
 6. On the release branch, update `CHANGELOG.md`, `package.json`, and any last release notes.
-7. Merge the release branch into `main`; automation creates `v<version>` from the merged `main` commit, then open a `main` into `develop` PR for the back-merge.
-8. For urgent production fixes, branch `hotfix/<version>` from `main`, merge back to `main`; automation creates the matching tag, then open a `main` into `develop` PR for the back-merge.
+7. Merge the release branch into `main`; automation creates `v<version>` from the merged `main` commit, dispatches the release pipeline, then open a `main` into `develop` PR for the back-merge.
+8. For urgent production fixes, branch `hotfix/<version>` from `main`, merge back to `main`; automation creates the matching tag, dispatches the release pipeline, then open a `main` into `develop` PR for the back-merge.
 
 ## Commands
 
@@ -48,7 +48,7 @@ git checkout -b hotfix/0.1.2
 ## Repo Automation
 
 - CI runs on `main`, `develop`, `feature/*`, `release/*`, and `hotfix/*`.
-- Merged `release/*` and `hotfix/*` PRs into `main` auto-create a matching `v*` tag when the version in `package.json` does not already have one.
+- Merged `release/*` and `hotfix/*` PRs into `main` auto-create a matching `v*` tag when the version in `package.json` does not already have one, then dispatch the release workflow for that tag.
 - Tag pushes matching `v*` package the extension, publish the generated `.vsix` to a GitHub release, and can publish to extension registries when secrets are configured.
 - Manual `workflow_dispatch` runs can re-publish an existing `v*` tag when a release needs to be retried after workflow fixes or secret changes.
 - `npm run release:check` verifies the repo and creates a local `.vsix` package before a release PR or tag.
