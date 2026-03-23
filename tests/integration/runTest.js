@@ -7,6 +7,21 @@ const {
   runTests
 } = require("@vscode/test-electron");
 
+const RETRYABLE_DOWNLOAD_CODES = new Set([
+  "ECONNABORTED",
+  "ECONNRESET",
+  "EAI_AGAIN",
+  "ENETDOWN",
+  "ENETRESET",
+  "ENETUNREACH",
+  "ENOTFOUND",
+  "ETIMEDOUT"
+]);
+
+function sleep(delayMs) {
+  return new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
 function resolveVsCodeExecutablePath() {
   const candidates = [
     process.env.VSCODE_EXECUTABLE_PATH,
@@ -27,6 +42,50 @@ function resolveVsCodeExecutablePath() {
   return undefined;
 }
 
+function isRetryableDownloadError(error) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const code = typeof error.code === "string" ? error.code : "";
+  if (RETRYABLE_DOWNLOAD_CODES.has(code)) {
+    return true;
+  }
+
+  const message = typeof error.message === "string" ? error.message.toLowerCase() : "";
+  return message.includes("aborted") || message.includes("socket hang up");
+}
+
+async function downloadVsCodeWithRetries() {
+  const attempts = Number.parseInt(
+    process.env.TCTIDIER_VSCODE_DOWNLOAD_ATTEMPTS || "3",
+    10
+  );
+  const delayMs = Number.parseInt(
+    process.env.TCTIDIER_VSCODE_DOWNLOAD_DELAY_MS || "2000",
+    10
+  );
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await downloadAndUnzipVSCode();
+    } catch (error) {
+      if (!isRetryableDownloadError(error) || attempt === attempts) {
+        throw error;
+      }
+
+      console.warn(
+        `Retrying VS Code test runtime download (${attempt}/${attempts}) after error: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      await sleep(delayMs * attempt);
+    }
+  }
+
+  throw new Error("Failed to download the VS Code test runtime.");
+}
+
 async function resolveVsCodeCliPath() {
   const installedPath = resolveVsCodeExecutablePath();
   if (installedPath) {
@@ -36,7 +95,7 @@ async function resolveVsCodeCliPath() {
     return installedPath;
   }
 
-  const downloadedPath = await downloadAndUnzipVSCode();
+  const downloadedPath = await downloadVsCodeWithRetries();
   return resolveCliPathFromVSCodeExecutablePath(downloadedPath);
 }
 
