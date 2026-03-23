@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-03-23
+
+### Added
+
+- Merged `release/*` and `hotfix/*` pull requests into `main` can now auto-create the matching `v*` tag so the release pipeline can publish without a separate manual tagging step.
+
+### Changed
+
+- Rewrote the root `README.md` for Marketplace readers so installation, formatting commands, supported file types, and workspace configuration are easier to scan.
+- Kept repo-oriented setup details in `docs/`, including a version-agnostic local VSIX install example in `docs/QUICKSTART.md`.
+
 ## [0.1.3] - 2026-03-19
 
 ### Fixed
