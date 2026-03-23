@@ -65,10 +65,17 @@ async function downloadVsCodeWithRetries() {
     process.env.TCTIDIER_VSCODE_DOWNLOAD_DELAY_MS || "2000",
     10
   );
+  const timeoutMs = Number.parseInt(
+    process.env.TCTIDIER_VSCODE_DOWNLOAD_TIMEOUT_MS || "120000",
+    10
+  );
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      return await downloadAndUnzipVSCode();
+      return await downloadAndUnzipVSCode({
+        cachePath: path.resolve(process.cwd(), ".vscode-test"),
+        timeout: timeoutMs
+      });
     } catch (error) {
       if (!isRetryableDownloadError(error) || attempt === attempts) {
         throw error;
