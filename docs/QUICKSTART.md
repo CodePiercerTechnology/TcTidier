@@ -30,7 +30,7 @@ To keep rebuilding while you edit, use `Run TcTidier Extension (Watch)`.
 
 ```bash
 npm run package:vsix
-code --install-extension tctidier-0.1.2.vsix --force
+code --install-extension tctidier-<version>.vsix --force
 ```
 
 ## Recommended VS Code Settings
