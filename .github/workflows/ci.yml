@@ -37,7 +37,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .vscode-test
-          key: vscode-test-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json', 'tests/integration/runTest.js') }}
+          key: vscode-test-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            vscode-test-${{ runner.os }}-
 
       - name: Install dependencies
         env:
@@ -47,4 +49,7 @@ jobs:
       - name: Verify
         env:
           NPM_CONFIG_CAFILE: ""
+          TCTIDIER_VSCODE_DOWNLOAD_ATTEMPTS: "5"
+          TCTIDIER_VSCODE_DOWNLOAD_DELAY_MS: "5000"
+          TCTIDIER_VSCODE_DOWNLOAD_TIMEOUT_MS: "300000"
         run: npm run verify
